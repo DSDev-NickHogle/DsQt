@@ -66,11 +66,11 @@ find_package(Qt6 6.9
 
 #qt_standard_project_setup(REQUIRES 6.9)
 
-add_subdirectory("Dsqt/Core")
-add_subdirectory("Dsqt/Bridge")
-add_subdirectory("Dsqt/Waffles")
-add_subdirectory("Dsqt/TouchEngine")
-add_subdirectory("Dsqt/Spout")
+add_subdirectory("DsQt/Core")
+add_subdirectory("DsQt/Bridge")
+add_subdirectory("DsQt/Waffles")
+add_subdirectory("DsQt/TouchEngine")
+add_subdirectory("DsQt/Spout")
 
 if(Dsqt::Core::DSQT_USE_GLM)
     message(STATUS "Dsqt: GLM support enabled")
@@ -184,7 +184,7 @@ if(PROJECT_IS_TOP_LEVEL)
     # Install the built library targets
     # Note: Qt's qt_add_qml_module creates internal OBJECT library targets that
     # cannot be exported. We install the libraries without export and create
-    # imported targets manually in DsqtConfig.cmake.
+    # imported targets manually in DsQtConfig.cmake.
     install(TARGETS
         Core
         Coreplugin
