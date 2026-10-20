@@ -62,7 +62,7 @@ set PRINT_HELP=0
 set QT_PATH=
 set NO_PRIVATE_REINJECT=0
 
-:: Parse arguments — accept preset and flags in any order
+:: Parse arguments -- accept preset and flags in any order
 :parse_args
 if "%~1"=="" goto :args_done
 if /i "%~1"=="-fresh"         (set FRESH_CONFIGURE=1& shift & goto :parse_args)
@@ -182,18 +182,8 @@ if "!VCPKG_NEEDS_BOOTSTRAP!"=="1" (
 
 :after_vcpkg_update
 
-:: --- Resolve Qt path ---
 if defined QT_PATH (
-    REM If it looks like a version number (no backslash/slash), expand to C:\Qt\<ver>\msvc2022_64
-    echo !QT_PATH! | findstr /r "[\\/]" >nul 2>&1
-    if !errorlevel! neq 0 (
-        set QT_PATH=C:\Qt\!QT_PATH!\msvc2022_64
-    )
-    if not exist "!QT_PATH!" (
-        powershell -NoProfile -Command "Write-Host 'Qt path not found: !QT_PATH!' -ForegroundColor Red"
-        exit /b 1
-    )
-    powershell -NoProfile -Command "Write-Host '    Qt: !QT_PATH!' -ForegroundColor Yellow"
+    powershell -NoProfile -Command "Write-Host '    Qt override: !QT_PATH!' -ForegroundColor Yellow"
 )
 
 :: --- Hard rebuild: delete build folder then continue with full build ---
@@ -259,7 +249,7 @@ if %NO_PRIVATE_REINJECT%==1 (
     set CMAKE_CONFIGURE=%CMAKE_CONFIGURE% -DDSQT_TOUCH_NO_PRIVATE_REINJECT=ON
 )
 if defined QT_PATH (
-    set CMAKE_CONFIGURE=!CMAKE_CONFIGURE! -DCMAKE_PREFIX_PATH="!QT_PATH!" -DQt6_DIR="!QT_PATH!/lib/cmake/Qt6"
+    set CMAKE_CONFIGURE=!CMAKE_CONFIGURE! -DQT_VERSION_OR_PATH="!QT_PATH!"
 )
 
 :: Record overall start time
@@ -358,12 +348,14 @@ set INSTALL_RELEASE_END=0
 if !SKIP_INSTALL!==1 (
     echo.
     call :header "Skipping Install (-no-install)"
+    if !BUILD_TOOLS!==1 goto :tools
     goto :timing
 )
 
 if !FORCE_INSTALL!==0 if !DEBUG_NOOP!==1 if !RELEASE_NOOP!==1 (
     echo.
     powershell -NoProfile -Command "Write-Host 'No changes detected - skipping install.' -ForegroundColor Yellow"
+    if !BUILD_TOOLS!==1 goto :tools
     goto :timing
 )
 
@@ -387,6 +379,7 @@ if %errorlevel% neq 0 (
 )
 call :gettime INSTALL_RELEASE_END
 
+:tools
 :: --- Build and Install Tools (ProjectCloner + ClonerSource) ---
 if !BUILD_TOOLS!==1 (
     set TOOLS_DIR=%~dp0..\Tools\ProjectCloner
@@ -398,7 +391,7 @@ if !BUILD_TOOLS!==1 (
     call :header "Configuring ProjectCloner"
     set TOOLS_CMAKE=cmake -S "!TOOLS_DIR!" -B "!TOOLS_BUILD!" -G Ninja -DCMAKE_MAKE_PROGRAM="!NINJA_EXE!" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="!INSTALL_PREFIX!\Tools\ProjectCloner"
     if defined QT_PATH (
-        set TOOLS_CMAKE=!TOOLS_CMAKE! -DCMAKE_PREFIX_PATH="!QT_PATH!"
+        set TOOLS_CMAKE=!TOOLS_CMAKE! -DQT_VERSION_OR_PATH="!QT_PATH!"
     )
     !TOOLS_CMAKE!
     if !errorlevel! neq 0 (

@@ -66,6 +66,11 @@ int main(int argc, char *argv[])
 
     //QtWebEngineQuick::initialize();
 
+    // Setup application identity before DsGuiApplication constructor prints startup banner
+    QCoreApplication::setOrganizationName("Downstream");
+    QCoreApplication::setApplicationName("ClonerSource");
+    QCoreApplication::setOrganizationDomain("downstream.com");
+
     DsGuiApplication app(argc, argv);
 
     //set the DS icon for the app

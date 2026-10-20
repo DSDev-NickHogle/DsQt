@@ -11,10 +11,7 @@
 #include <QSettings>
 #include <QStandardPaths>
 
-DsGuiApplication::DsGuiApplication(int &argc, char **argv):QApplication(argc,argv)
-{
-    initializeLogging();
-}
+
 
 void DsGuiApplication::initializeLogging()
 {
@@ -75,7 +72,7 @@ void DsGuiApplication::printStartupBanner()
 {
     qInfo() << "========================================";
     qInfo() << applicationName() << "v" << applicationVersion();
-    qInfo() << "DsQt" << DSQT_VERSION << "| Qt" << qVersion() << "| PID:" << applicationPid();
+    qInfo() << "DsQt" << DSQT_VERSION_GIT << "| Qt" << qVersion() << "| PID:" << applicationPid();
     qInfo() << "Started:" << QDateTime::currentDateTime().toString(Qt::ISODate);
     qInfo() << "========================================";
 }

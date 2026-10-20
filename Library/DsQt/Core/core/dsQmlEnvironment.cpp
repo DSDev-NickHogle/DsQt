@@ -2,6 +2,7 @@
 #include "core/dsQmlApplicationEngine.h"
 #include "core/dsEnvironment.h"
 #include "core/dsGuiApplication.h"
+#include "core/dsVersion.h"
 
 namespace dsqt {
 
@@ -25,6 +26,14 @@ const QString DsQmlEnvironment::logFile()
     return app->getLogPath();
 }
 
+const QString DsQmlEnvironment::dsqtVersion() const
+{
+    return QStringLiteral(DSQT_VERSION);
+}
 
+const QString DsQmlEnvironment::dsqtGitVersion() const
+{
+    return QStringLiteral(DSQT_VERSION_GIT);
+}
 
 } // namespace dsqt

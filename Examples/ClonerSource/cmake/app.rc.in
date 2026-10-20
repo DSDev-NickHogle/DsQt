@@ -28,8 +28,8 @@ BEGIN
             VALUE "LegalCopyright", "Copyright © Downstream. All rights reserved."
             VALUE "OriginalFilename", "@DS_EXE_NAME@.exe"
             VALUE "ProductName", "@DS_PROJECT_NAME@"
-            VALUE "ProductVersion", "@DS_APP_VERSION@"
-            VALUE "RANDOM THING!","woot"
+            VALUE "ProductVersion", "@DS_APP_VERSION_GIT@"
+            VALUE "Comments", "Built with DsQt @DSQT_VERSION_GIT@"
         END
     END
     BLOCK "VarFileInfo"

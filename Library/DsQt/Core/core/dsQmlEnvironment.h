@@ -40,10 +40,17 @@ class DsQmlEnvironment : public QObject {
      * @return The expanded URL.
      */
     Q_INVOKABLE const QUrl    expandUrl(const QString& string);
-    // Q_INVOKABLE QString getLocalFolder();
-
     Q_INVOKABLE const QString logFile();
-   
+
+    /**
+     * @brief Returns the base DsQt library version (e.g. "0.1.0" or "0.1.0.139").
+     */
+    Q_INVOKABLE const QString dsqtVersion() const;
+
+    /**
+     * @brief Returns the full DsQt library Git version string (e.g. "0.1.0.139+71 (feat/...@sha)").
+     */
+    Q_INVOKABLE const QString dsqtGitVersion() const;
 };
 
 } // namespace dsqt

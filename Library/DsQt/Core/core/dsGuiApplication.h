@@ -28,7 +28,14 @@ struct DsGraphicsConfig {
 class DsGuiApplication : public QApplication
 {
   public:
-    DsGuiApplication(int &argc, char **argv);
+    DsGuiApplication(int &argc, char **argv) : QApplication(argc, argv) {
+#ifdef DS_APP_VERSION_GIT
+        if (applicationVersion().isEmpty()) {
+            setApplicationVersion(QStringLiteral(DS_APP_VERSION_GIT));
+        }
+#endif
+        initializeLogging();
+    }
 
     static void configureGraphics(const DsGraphicsConfig& config = {});
 

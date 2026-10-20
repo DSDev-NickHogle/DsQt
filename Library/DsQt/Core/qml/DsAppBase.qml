@@ -275,6 +275,19 @@ ApplicationWindow {
 
         onSettingsTriggered: (isChecked) => { settingsViewer.setVisible(isChecked) }
 
+        property DsAppAboutDialog aboutDialog: null
+        onHelpAboutTriggered: {
+            if (aboutDialog === null) {
+                aboutDialog = aboutDialogComponent.createObject(window)
+            }
+            // Position directly below the top menu bar for LMI accessibility on large canvases
+            aboutDialog.x = window.x + Math.max(10, Math.floor((window.width - aboutDialog.width) / 2))
+            aboutDialog.y = window.y + windowMenuBar.height + 40
+            aboutDialog.show()
+            aboutDialog.raise()
+            aboutDialog.requestActivate()
+        }
+
     }
 
     /// Provides access to the settings.
@@ -326,6 +339,12 @@ ApplicationWindow {
 
     /// TouchFilter debug controls window component (loaded dynamically from Touch module)
     property Component touchFilterDebugComponent: null
+
+    /// About dialog component
+    Component {
+        id: aboutDialogComponent
+        DsAppAboutDialog {}
+    }
 
     /// TODO AppHost log viewer.
 }

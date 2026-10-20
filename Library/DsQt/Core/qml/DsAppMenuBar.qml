@@ -11,6 +11,7 @@ MenuBar {
     signal settingsTriggered(bool checked)
     signal contentBrowseToggled(bool checked)  // Use a parameter for checkable actions
     signal helpShortcutsTriggered()
+    signal helpAboutTriggered()
     signal touchFilterDebugTriggered(bool checked)
 
     property alias logsApplicationChecked: logsApplicationAction.checked
@@ -144,6 +145,10 @@ MenuBar {
         Action {
             text: "Shortcuts"
             onTriggered: menuBar.helpShortcutsTriggered()
+        }
+        Action {
+            text: "About"
+            onTriggered: menuBar.helpAboutTriggered()
         }
     }
 }

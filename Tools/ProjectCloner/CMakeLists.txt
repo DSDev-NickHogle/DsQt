@@ -10,6 +10,11 @@ set(QT_QML_GENERATE_QMLLS_INI ON)
 
 set(DS_QT_DLLS_SUBDIR ON CACHE BOOL "Set to ON to copy the Qt dlls to a subdirectory of the install directory. Default is ON.")
 
+include("${CMAKE_CURRENT_SOURCE_DIR}/../../Library/cmake/DsqtQtDetect.cmake" OPTIONAL)
+if(COMMAND dsqt_detect_qt)
+    dsqt_detect_qt()
+endif()
+
 find_package(Qt6 REQUIRED COMPONENTS Quick Core)
 
 qt_standard_project_setup(REQUIRES 6.8)
@@ -76,6 +81,7 @@ install(TARGETS appProjectCloner
 )
 
 install(FILES skip.txt DESTINATION ${PC_INSTALL_PREFIX}${CMAKE_INSTALL_BINDIR})
+install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/ProjectSource" DESTINATION ${PC_INSTALL_PREFIX}${CMAKE_INSTALL_BINDIR})
 
 qt_generate_deploy_qml_app_script(
     TARGET appProjectCloner

@@ -321,13 +321,20 @@ set(DS_EXE_NAME app${{DS_APP_NAME}})
 set(DS_PROJECT_NAME "{project_name}")
 set(DS_PROJECT_DESC "{project_desc}")
 
-# Read version from VERSION.txt (source of truth)
-file(STRINGS "${{CMAKE_CURRENT_SOURCE_DIR}}/VERSION.txt" DS_VERSION_STRING LIMIT_COUNT 1)
-string(STRIP "${{DS_VERSION_STRING}}" DS_VERSION_STRING)
-set(DS_APP_VERSION "${{DS_VERSION_STRING}}.0")
+# Find Dsqt from installed package (CMAKE_PREFIX_PATH set via CMakePresets.json)
+find_package(Dsqt REQUIRED COMPONENTS Core Bridge Waffles OPTIONAL_COMPONENTS TouchEngine Spout)
+
+message(STATUS "DSQT is at ${{Dsqt_DIR}}")
+if(DSQT_VERSION_GIT)
+    message(STATUS "Built against DsQt: ${{DSQT_VERSION_GIT}}")
+endif()
+
+# Resolve app version using DsqtGitVersion (automatically sets DS_APP_VERSION_COMMA)
+dsqt_get_git_version("${{CMAKE_CURRENT_SOURCE_DIR}}" DS_APP_VERSION_GIT DS_APP_VERSION DEFAULT_VERSION "0.1.0")
+message(STATUS "App Version: ${{DS_APP_VERSION_GIT}} (4-tuple: ${{DS_APP_VERSION}})")
 
 #define the project
-project(${{DS_APP_NAME}} VERSION ${{DS_VERSION_STRING}} LANGUAGES CXX)
+project(${{DS_APP_NAME}} VERSION ${{DS_APP_VERSION}} LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_INSTALL_PREFIX "${{CMAKE_BINARY_DIR}}/DEPLOY/")
@@ -335,11 +342,6 @@ set(QT_FORCE_CMP0156_TO_VALUE NEW)
 set(QT_QML_GENERATE_QMLLS_INI ON)
 find_package(Qt6 6.9 REQUIRED COMPONENTS {qt_comps_str})
 qt_standard_project_setup(REQUIRES 6.9)
-
-# Find Dsqt from installed package (CMAKE_PREFIX_PATH set via CMakePresets.json)
-find_package(Dsqt REQUIRED COMPONENTS Core Bridge Waffles OPTIONAL_COMPONENTS TouchEngine Spout)
-
-message("DSQT is at ${{Dsqt_DIR}}")
 """
 
     if local_subdir_lines:
@@ -423,10 +425,15 @@ target_include_directories(${{DS_EXE_NAME}} PRIVATE
     $<$<BOOL:${{Dsqt_TouchEngine_FOUND}}>:${{TouchEngineQt_INCLUDES}}>
 )
 
+target_compile_definitions(${DS_EXE_NAME} PRIVATE
+    DS_APP_VERSION_GIT="${DS_APP_VERSION_GIT}"
+    DSQT_VERSION_GIT="${DSQT_VERSION_GIT}"
+)
+
 # Provide DSQT_HAS_<MODULE> compile definitions for optional plugin imports
 foreach(_comp Core Bridge Waffles TouchEngine Spout)
-    if(Dsqt_${{_comp}}_FOUND)
-        target_compile_definitions(${{DS_EXE_NAME}} PRIVATE DSQT_HAS_${{_comp}})
+    if(Dsqt_${_comp}_FOUND)
+        target_compile_definitions(${DS_EXE_NAME} PRIVATE DSQT_HAS_${_comp})
     endif()
 endforeach()
 
@@ -1291,23 +1298,9 @@ def migrate(project_dir, dsqt_root, dry_run=False, no_backup=False):
             print("  Created: vcpkg.json")
     print()
 
-    # ── Step 6: Create VERSION.txt ──────────────────────────────────────
-    version_path = os.path.join(project_dir, "VERSION.txt")
-    print("Step 6: VERSION.txt...")
-    if os.path.isfile(version_path):
-        print(f"  Already exists, skipping.")
-    else:
-        # Extract major.minor.patch from app_version (strip trailing .0 if it's x.y.z.0)
-        version = app_version
-        parts = version.split('.')
-        if len(parts) == 4 and parts[3] == '0':
-            version = '.'.join(parts[:3])
-        if dry_run:
-            print(f"  [DRY RUN] Would create VERSION.txt with: {version}")
-        else:
-            with open(version_path, 'w') as f:
-                f.write(version + '\n')
-            print(f"  Created: VERSION.txt ({version})")
+    # ── Step 6: App Versioning ──────────────────────────────────────────
+    # Note: VERSION.txt is retired. DsqtGitVersion automatically derives versions from Git tags.
+    print("Step 6: Git versioning handled automatically via DsqtGitVersion.")
     print()
 
     # ── Step 7: Update main.cpp ─────────────────────────────────────────

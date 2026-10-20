@@ -17,6 +17,7 @@ qt_add_qml_module(Core
     OUTPUT_TARGETS CoreTargets
     QML_FILES
         #qml/bridge/DsBridgeQueryControls.qml
+        qml/DsAppAboutDialog.qml
         qml/DsAppBase.qml
         qml/DsAppMenuBar.qml
         qml/DsAppMenuItem.qml
