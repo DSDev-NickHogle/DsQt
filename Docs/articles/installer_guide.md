@@ -9,6 +9,7 @@ are automatically populated.
 
 \see settings_guide
 \see cmake_user_presets
+\see versioning_and_app_metadata
 
 # Prerequisites
 

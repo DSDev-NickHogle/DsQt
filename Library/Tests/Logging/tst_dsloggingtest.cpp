@@ -23,6 +23,7 @@ private slots:
 
     void version_macroIsDefined();
     void version_majorMinorPatchAreDefined();
+    void version_gitStringIsDefined();
 };
 
 // ---------------------------------------------------------------------------
@@ -110,6 +111,15 @@ void DsLoggingTest::version_majorMinorPatchAreDefined()
     const QString expected = QStringLiteral("%1.%2.%3")
         .arg(DSQT_VERSION_MAJOR).arg(DSQT_VERSION_MINOR).arg(DSQT_VERSION_PATCH);
     QCOMPARE(QStringLiteral(DSQT_VERSION), expected);
+}
+
+void DsLoggingTest::version_gitStringIsDefined()
+{
+    const QString gitVer = QStringLiteral(DSQT_VERSION_GIT);
+    QVERIFY2(!gitVer.isEmpty(), "DSQT_VERSION_GIT should not be empty");
+    // Should start with the base version or semver digits
+    QVERIFY2(gitVer.startsWith(QStringLiteral(DSQT_VERSION)) || gitVer.contains(QStringLiteral(".")),
+             qPrintable(QStringLiteral("Expected git version to contain semver: ") + gitVer));
 }
 
 QTEST_MAIN(DsLoggingTest)

@@ -13,6 +13,12 @@
 # ----------------------------------------------------------------------
 include(CMakeFindDependencyMacro)
 
+# Auto-detect Qt installation if not already found or configured
+if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/DsqtQtDetect.cmake")
+    include("${CMAKE_CURRENT_LIST_DIR}/DsqtQtDetect.cmake")
+    dsqt_detect_qt()
+endif()
+
 find_dependency(Qt6 6.9
     REQUIRED COMPONENTS
         Core
@@ -59,6 +65,37 @@ set(DSQT_QML_IMPORT_PATH "${DSQT_QML_DIR}" CACHE PATH "Dsqt QML import path")
 if(NOT "${DSQT_QML_IMPORT_PATH}" IN_LIST QML_IMPORT_PATH)
     list(APPEND QML_IMPORT_PATH "${DSQT_QML_IMPORT_PATH}")
     set(QML_IMPORT_PATH "${QML_IMPORT_PATH}" CACHE STRING "Qt Creator QML import paths" FORCE)
+endif()
+
+# ----------------------------------------------------------------------
+# Determine installed DsQt Git version (tag / git describe / branch)
+# Resolves dsqt_version_git.txt for the active configuration.
+# ----------------------------------------------------------------------
+set(DSQT_VERSION_GIT "")
+set(DSQT_VERSION_GIT_FILE "")
+
+if(DEFINED CMAKE_BUILD_TYPE AND NOT CMAKE_BUILD_TYPE STREQUAL "")
+    set(_dsqt_cfg_version_file "${DSQT_LIB_DIR}/${CMAKE_BUILD_TYPE}/dsqt_version_git.txt")
+    if(EXISTS "${_dsqt_cfg_version_file}")
+        file(STRINGS "${_dsqt_cfg_version_file}" _ver_line LIMIT_COUNT 1)
+        string(STRIP "${_ver_line}" _ver_line)
+        if(_ver_line)
+            set(DSQT_VERSION_GIT "${_ver_line}")
+            set(DSQT_VERSION_GIT_FILE "${_dsqt_cfg_version_file}")
+        endif()
+    endif()
+    unset(_dsqt_cfg_version_file)
+    unset(_ver_line)
+endif()
+
+# ----------------------------------------------------------------------
+# Include helper modules for consumer projects
+# ----------------------------------------------------------------------
+if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/DsqtGitVersion.cmake")
+    include("${CMAKE_CURRENT_LIST_DIR}/DsqtGitVersion.cmake")
+endif()
+if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/DsqtQtDetect.cmake")
+    include("${CMAKE_CURRENT_LIST_DIR}/DsqtQtDetect.cmake")
 endif()
 
 # ----------------------------------------------------------------------

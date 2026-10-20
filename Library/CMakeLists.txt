@@ -2,11 +2,12 @@ cmake_minimum_required(VERSION 3.29)
 
 include(FetchContent)
 
-# Read version from VERSION.txt (source of truth)
-file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/VERSION.txt" DSQT_VERSION_STRING LIMIT_COUNT 1)
-string(STRIP "${DSQT_VERSION_STRING}" DSQT_VERSION_STRING)
+# Resolve version using Git metadata
+include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/DsqtGitVersion.cmake")
+dsqt_get_git_version("${CMAKE_CURRENT_SOURCE_DIR}" DSQT_VERSION_GIT DSQT_VERSION TAG_MATCH "library/*" DEFAULT_VERSION "0.2.0")
+message(STATUS "DsQt Version: ${DSQT_VERSION_GIT} (4-tuple: ${DSQT_VERSION})")
 
-project(Dsqt VERSION ${DSQT_VERSION_STRING} LANGUAGES CXX)
+project(Dsqt VERSION ${DSQT_VERSION} LANGUAGES CXX)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
@@ -51,22 +52,9 @@ if(PROJECT_IS_TOP_LEVEL)
     endif()
 endif()
 
-# --- Qt auto-discovery (Windows) -------------------------------------------------
-# Scans C:/Qt/*/msvc2022_64 and selects the highest installed version.
-# Override by setting CMAKE_PREFIX_PATH or Qt6_DIR in your CMakeUserPresets.json.
-if(WIN32 AND NOT Qt6_DIR)
-    file(GLOB _qt_dirs LIST_DIRECTORIES true "C:/Qt/*/msvc2022_64")
-    if(_qt_dirs)
-        list(SORT _qt_dirs ORDER DESCENDING)
-        list(GET _qt_dirs 0 _qt_auto)
-        message(STATUS "DsQt: Auto-discovered Qt at ${_qt_auto}")
-        list(APPEND CMAKE_PREFIX_PATH "${_qt_auto}")
-    else()
-        message(WARNING "DsQt: No Qt installation found in C:/Qt/. "
-                        "Set CMAKE_PREFIX_PATH or Qt6_DIR to your Qt path.")
-    endif()
-endif()
-# ---------------------------------------------------------------------------------
+# Auto-detect Qt installation (sets Qt6_ROOT if not already configured)
+include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/DsqtQtDetect.cmake")
+dsqt_detect_qt()
 
 find_package(Qt6 6.9
     REQUIRED COMPONENTS
@@ -341,12 +329,22 @@ if(PROJECT_IS_TOP_LEVEL)
         # COMPATIBILITY AnyNewerVersion     # ← more permissive alternative
     )
 
-    # Install the two generated configuration files
+    # Install configuration files and helper modules
     install(FILES
         "${CMAKE_CURRENT_BINARY_DIR}/DsqtConfig.cmake"
         "${CMAKE_CURRENT_BINARY_DIR}/DsqtConfigVersion.cmake"
+        "${CMAKE_CURRENT_SOURCE_DIR}/cmake/DsqtGitVersion.cmake"
+        "${CMAKE_CURRENT_SOURCE_DIR}/cmake/DsqtQtDetect.cmake"
         DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Dsqt
     )
+
+    # ----------------------------------------------------------------------
+    # Version Stamp File (Config-Specific)
+    # Writes dsqt_version_git.txt to lib/<CONFIG>/ alongside the static libs.
+    # ----------------------------------------------------------------------
+    install(CODE "
+        file(WRITE \"\${CMAKE_INSTALL_PREFIX}/lib/\${CMAKE_INSTALL_CONFIG_NAME}/dsqt_version_git.txt\" \"${DSQT_VERSION_GIT}\\n\")
+    ")
 
     # ----------------------------------------------------------------------
     # Register install location in package registry (cross-platform)
